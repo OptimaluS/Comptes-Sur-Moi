@@ -1,87 +1,110 @@
-import { app as d, ipcMain as c, dialog as S, BrowserWindow as y } from "electron";
-import { fileURLToPath as k } from "url";
-import o from "node:path";
-import n from "node:fs";
-import s from "node:process";
-const b = k(import.meta.url), w = o.dirname(b), f = o.join(d.getPath("documents"), "ComptesSurMoi_Backups");
-n.existsSync(f) || n.mkdirSync(f, { recursive: !0 });
-let p = null;
-c.handle("choose-backup-location", async () => {
-  const { canceled: r, filePaths: t } = await S.showOpenDialog({
+import { app, ipcMain, dialog, BrowserWindow } from "electron";
+import { fileURLToPath } from "url";
+import path from "node:path";
+import fs from "node:fs";
+import process from "node:process";
+const __filename$1 = fileURLToPath(import.meta.url);
+const __dirname$1 = path.dirname(__filename$1);
+const backupsDir = path.join(app.getPath("documents"), "ComptesSurMoi_Backups");
+if (!fs.existsSync(backupsDir)) fs.mkdirSync(backupsDir, { recursive: true });
+let customBackupDir = null;
+ipcMain.handle("choose-backup-location", async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
     title: "Choisir le dossier de sauvegarde",
-    defaultPath: p ?? f,
+    defaultPath: customBackupDir ?? backupsDir,
     properties: ["openDirectory", "createDirectory"]
   });
-  return !r && t && t[0] ? (p = t[0], p) : null;
+  if (!canceled && filePaths && filePaths[0]) {
+    customBackupDir = filePaths[0];
+    return customBackupDir;
+  }
+  return null;
 });
-c.handle("save-backup", async (r, t, e = "auto") => {
-  const a = /* @__PURE__ */ new Date(), l = (u) => u.toString().padStart(2, "0"), v = `${l(a.getDate())}-${l(a.getMonth() + 1)}-${a.getFullYear()}-${l(a.getHours())}-${l(a.getMinutes())}-${l(a.getSeconds())}`, j = `backup-${e === "auto" ? "auto" : "manuel"}-${v}.json`, h = p ?? f;
+ipcMain.handle("save-backup", async (event, data, type = "auto") => {
+  const now = /* @__PURE__ */ new Date();
+  const pad = (n) => n.toString().padStart(2, "0");
+  const dateStr = `${pad(now.getDate())}-${pad(now.getMonth() + 1)}-${now.getFullYear()}-${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+  const name = `backup-${type === "auto" ? "auto" : "manuel"}-${dateStr}.json`;
+  const targetDir = customBackupDir ?? backupsDir;
   try {
-    n.existsSync(h) || n.mkdirSync(h, { recursive: !0 });
-    const u = o.join(h, j);
-    return n.writeFileSync(u, JSON.stringify(t, null, 2)), u;
-  } catch (u) {
-    return console.error("Backup failed:", u), null;
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+    const backupPath = path.join(targetDir, name);
+    fs.writeFileSync(backupPath, JSON.stringify(data, null, 2));
+    return backupPath;
+  } catch (error) {
+    console.error("Backup failed:", error);
+    return null;
   }
 });
-c.handle("list-backups", () => {
-  const r = p ?? f;
+ipcMain.handle("list-backups", () => {
+  const targetDir = customBackupDir ?? backupsDir;
   try {
-    return n.existsSync(r) ? n.readdirSync(r).filter((e) => e.endsWith(".json")).map((e) => ({
-      name: e,
-      path: o.join(r, e),
-      date: n.statSync(o.join(r, e)).mtime
-    })).sort((e, a) => new Date(a.date).getTime() - new Date(e.date).getTime()) : [];
-  } catch (t) {
-    return console.error("List backups failed:", t), [];
+    if (!fs.existsSync(targetDir)) {
+      return [];
+    }
+    const files = fs.readdirSync(targetDir).filter((f) => f.endsWith(".json")).map((f) => ({
+      name: f,
+      path: path.join(targetDir, f),
+      date: fs.statSync(path.join(targetDir, f)).mtime
+    }));
+    return files.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  } catch (error) {
+    console.error("List backups failed:", error);
+    return [];
   }
 });
-c.handle("restore-backup", async (r, t) => {
+ipcMain.handle("restore-backup", async (event, backupPath) => {
   try {
-    const e = n.readFileSync(t, "utf-8");
-    return JSON.parse(e);
-  } catch (e) {
-    return console.error("Restore backup failed:", e), null;
+    const raw = fs.readFileSync(backupPath, "utf-8");
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error("Restore backup failed:", error);
+    return null;
   }
 });
-c.handle("export-data", async (r, t) => {
-  const { canceled: e, filePath: a } = await S.showSaveDialog({
+ipcMain.handle("export-data", async (event, data) => {
+  const { canceled, filePath } = await dialog.showSaveDialog({
     title: "Exporter les données",
     defaultPath: "comptes-sur-moi-export.json",
     filters: [{ name: "JSON", extensions: ["json"] }]
   });
-  if (e || !a) return !1;
+  if (canceled || !filePath) return false;
   try {
-    return n.writeFileSync(a, JSON.stringify(t, null, 2)), !0;
-  } catch (l) {
-    return console.error("Export failed:", l), !1;
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    return true;
+  } catch (error) {
+    console.error("Export failed:", error);
+    return false;
   }
 });
-c.handle("import-data", async () => {
-  const { canceled: r, filePaths: t } = await S.showOpenDialog({
+ipcMain.handle("import-data", async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
     title: "Importer des données",
     filters: [{ name: "JSON", extensions: ["json"] }],
     properties: ["openFile"]
   });
-  if (r || !t || t.length === 0) return null;
+  if (canceled || !filePaths || filePaths.length === 0) return null;
   try {
-    const e = n.readFileSync(t[0], "utf-8");
-    return JSON.parse(e);
-  } catch (e) {
-    return console.error("Import failed:", e), null;
+    const raw = fs.readFileSync(filePaths[0], "utf-8");
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error("Import failed:", error);
+    return null;
   }
 });
-s.env.DIST = o.join(w, "../dist");
-s.env.VITE_PUBLIC = d.isPackaged ? s.env.DIST : o.join(s.env.DIST, "../public");
-const m = o.join(d.getPath("userData"), "compta-data.json");
-c.handle("read-data", () => {
+process.env.DIST = path.join(__dirname$1, "../dist");
+process.env.VITE_PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.DIST, "../public");
+const dataPath = path.join(app.getPath("userData"), "compta-data.json");
+ipcMain.handle("read-data", () => {
   try {
-    if (n.existsSync(m)) {
-      const r = n.readFileSync(m, "utf-8");
-      return JSON.parse(r);
+    if (fs.existsSync(dataPath)) {
+      const rawData = fs.readFileSync(dataPath, "utf-8");
+      return JSON.parse(rawData);
     }
-  } catch (r) {
-    console.error("Failed to read data file:", r);
+  } catch (error) {
+    console.error("Failed to read data file:", error);
   }
   return {
     accounts: [],
@@ -94,31 +117,44 @@ c.handle("read-data", () => {
     goals: []
   };
 });
-c.handle("save-data", (r, t) => {
+ipcMain.handle("save-data", (event, data) => {
   try {
-    n.writeFileSync(m, JSON.stringify(t, null, 2));
-  } catch (e) {
-    console.error("Failed to save data file:", e);
+    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+  } catch (error) {
+    console.error("Failed to save data file:", error);
   }
 });
-let i;
-const g = s.env.VITE_DEV_SERVER_URL;
-function D() {
-  i = new y({
-    icon: o.join(s.env.VITE_PUBLIC, "logo.png"),
+let win;
+const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
+function createWindow() {
+  win = new BrowserWindow({
+    icon: path.join(process.env.VITE_PUBLIC, "logo.png"),
     width: 1200,
     height: 800,
     webPreferences: {
-      preload: o.join(w, "preload.mjs")
+      preload: path.join(__dirname$1, "preload.mjs")
     }
-  }), i.webContents.on("did-finish-load", () => {
-    i == null || i.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-  }), g ? (i.loadURL(g), i.webContents.openDevTools()) : i.loadFile(o.join(s.env.DIST, "index.html"));
+  });
+  win.removeMenu();
+  win.webContents.on("did-finish-load", () => {
+    win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
+  });
+  if (VITE_DEV_SERVER_URL) {
+    win.loadURL(VITE_DEV_SERVER_URL);
+    win.webContents.openDevTools();
+  } else {
+    win.loadFile(path.join(process.env.DIST, "index.html"));
+  }
 }
-d.on("window-all-closed", () => {
-  s.platform !== "darwin" && (d.quit(), i = null);
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+    win = null;
+  }
 });
-d.on("activate", () => {
-  y.getAllWindows().length === 0 && D();
+app.on("activate", () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
 });
-d.whenReady().then(D);
+app.whenReady().then(createWindow);
