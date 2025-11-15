@@ -1,0 +1,16 @@
+directories:
+  output: release
+  buildResources: assets
+appId: com.comptessurmoi.app
+productName: Comptes Sur Moi
+files:
+  - filter:
+      - dist/**/*
+      - dist-electron/**/*
+win:
+  icon: Logo-Comptes-Sur-Moi.ico
+nsis:
+  oneClick: false
+  perMachine: true
+  allowToChangeInstallationDirectory: true
+electronVersion: 31.7.7

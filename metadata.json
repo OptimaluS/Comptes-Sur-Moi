@@ -1,0 +1,7 @@
+{
+  "name": "Comptes Sur Moi",
+  "description": "Une application de comptabilité personnelle moderne, simple et intuitive pour suivre vos finances.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
