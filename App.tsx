@@ -17,6 +17,7 @@ import CategoryModal from './components/CategoryEditModal';
 import ConfirmationModal from './components/ConfirmationModal';
 import ToastContainer from './components/ToastContainer';
 import AddGoalModal from './components/AddGoalModal';
+import UpdateNotification from './components/UpdateNotification';
 import type { Account, Transaction, RecurringTransaction, NotificationSettings, Category, Goal, DeletableItem, Notification } from './types';
 import { Frequency, UNCATEGORIZED, NotificationMethod, SPLIT_TRANSACTION, NotificationType, TransactionType } from './types';
 import { recalculateBalanceHistory, getNextDueDate } from './utils';
@@ -721,6 +722,7 @@ const App: React.FC = () => {
           setNotifications={setNotifications}
           setIsSidebarOpen={setIsSidebarOpen}
         />
+                <UpdateNotification />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {activeView === 'dashboard' && <Dashboard 
               accounts={accounts}

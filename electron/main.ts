@@ -1,3 +1,23 @@
+// --- MISE À JOUR AUTOMATIQUE ---
+import { autoUpdater } from 'electron-updater';
+
+// Vérifie les mises à jour au démarrage
+app.on('ready', () => {
+  autoUpdater.checkForUpdatesAndNotify();
+});
+
+// Affiche une boîte de dialogue lors d'une mise à jour disponible
+autoUpdater.on('update-available', () => {
+  if (win) {
+    win.webContents.send('update_available');
+  }
+});
+
+autoUpdater.on('update-downloaded', () => {
+  if (win) {
+    win.webContents.send('update_downloaded');
+  }
+});
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import { fileURLToPath } from 'url';
 import path from 'node:path';

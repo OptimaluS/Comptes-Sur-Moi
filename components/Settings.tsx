@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { NotificationSettings } from '../types';
 import { NotificationMethod } from '../types';
 
@@ -33,6 +33,42 @@ const ToggleOption: React.FC<{ title: string; description: string; enabled: bool
 };
 
 const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
+    // Version de l'app
+    const [version, setVersion] = useState<string>('');
+    useEffect(() => {
+        try {
+            let v = '';
+            if (window?.require && window.require('electron')?.remote?.app) {
+                v = window.require('electron').remote.app.getVersion();
+            }
+            if (!v) {
+                // En mode dev, lit la version et la date du package.json
+                fetch('package.json')
+                  .then(res => res.json())
+                  .then(pkg => {
+                    setVersion(pkg.version);
+                    setBuildDate(pkg.buildDate || '');
+                  })
+                  .catch(() => setVersion(''));
+            } else {
+                setVersion(v);
+            }
+        } catch {}
+    }, []);
+
+    // Date de build
+    const [buildDate, setBuildDate] = useState<string>('');
+
+    // Option mise à jour auto
+    const [autoUpdate, setAutoUpdate] = useState<boolean>(true);
+    useEffect(() => {
+        const pref = localStorage.getItem('autoUpdate');
+        if (pref !== null) setAutoUpdate(pref === 'true');
+    }, []);
+    const handleToggleAutoUpdate = (enabled: boolean) => {
+        setAutoUpdate(enabled);
+        localStorage.setItem('autoUpdate', String(enabled));
+    };
         // Pour le guidage visuel de l'assistant
         const steps = [
             { key: 'main', label: 'Accueil' },
@@ -415,6 +451,24 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
                             </div>
                         </div>
                     )}
+                </div>
+                {/* Affichage version et option mise à jour */}
+                <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-200 mb-6">
+                    <h3 className="text-xl font-bold text-gray-800">Version de l'application</h3>
+                    <p className="text-gray-500 mt-1 mb-2">{version || '...'}</p>
+                    {buildDate && <p className="text-xs text-gray-400 mb-2">Build&nbsp;: {buildDate}</p>}
+                    <a
+                        href="https://github.com/OptimaluS/Comptes-Sur-Moi/releases"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-indigo-600 underline text-sm mb-2 block"
+                    >Notes de version</a>
+                    <ToggleOption
+                        title="Mises à jour automatiques"
+                        description="Activez ou désactivez la vérification et l'installation automatique des mises à jour."
+                        enabled={autoUpdate}
+                        onToggle={handleToggleAutoUpdate}
+                    />
                 </div>
                 {/* Soutenir le projet */}
                 <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-200">

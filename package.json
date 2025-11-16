@@ -1,17 +1,17 @@
 {
   "name": "comptes-sur-moi",
-  "private": true,
   "version": "1.0.0",
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:electron": "npm run build && electron-builder"
+    "build:electron": "node ./scripts/update-build-date.js && npm run build && electron-builder"
   },
   "dependencies": {
     "@google/genai": "^1.29.1",
     "autoprefixer": "^10.4.22",
+    "electron-updater": "^6.6.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.3",
     "postcss": "^8.5.6",
@@ -32,8 +32,18 @@
     "vite-plugin-electron-renderer": "^0.14.5"
   },
   "description": "Application de gestion de comptes personnels avec sauvegarde locale et restauration.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OptimaluS/Comptes-Sur-Moi.git"
+  },
+  "buildDate": "{{BUILD_DATE}}",
   "author": "Christophe <optimalus.christophe@gmail.com>",
   "build": {
+    "publish": [{
+      "provider": "github",
+      "owner": "OptimaluS",
+      "repo": "Comptes-Sur-Moi"
+    }],
     "appId": "com.comptessurmoi.app",
     "productName": "Comptes Sur Moi",
     "files": [
