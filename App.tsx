@@ -408,46 +408,50 @@ const App: React.FC = () => {
 
   const handleConfirmDelete = useCallback(() => {
       if (!itemToDelete) return;
-      const { type, data } = itemToDelete.item;
+      const currentItem = itemToDelete.item;
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            (async () => {
-                try {
-                    const stateToSave = {
-                        accounts,
-                        transactions,
-                        recurringTransactions,
-                        categories,
-                        notificationSettings,
-                        goals
-                    };
-                    await window.api.saveData(stateToSave);
-                    if (window.api.saveBackup) {
-                        await window.api.saveBackup(stateToSave, 'auto');
-                        setToasts(prev => [...prev, {
-                            id: crypto.randomUUID(),
-                            type: NotificationType.DEADLINE_SOON,
-                            message: 'Une sauvegarde automatique a été créée.',
-                            date: new Date(),
-                            isRead: false,
-                            relatedId: 'auto-backup'
-                        }]);
-                    }
-                } catch (err) {
-                    setToasts(prev => [...prev, {
-                        id: crypto.randomUUID(),
-                        type: NotificationType.OVERDUE,
-                        message: 'Erreur lors de la sauvegarde automatique.',
-                        date: new Date(),
-                        isRead: false,
-                        relatedId: 'auto-save-error'
-                    }]);
-                }
-            })();
-        }, 5 * 60 * 1000); // 5 minutes
-        return () => clearInterval(interval);
-    }, [accounts, transactions, recurringTransactions, categories, notificationSettings, goals]);
+      switch (currentItem.type) {
+          case 'account': {
+              const account = currentItem.data;
+              setAccounts(prev => prev.filter(acc => acc.id !== account.id));
+              setTransactions(prev => prev.filter(tx => tx.accountId !== account.id));
+              setRecurringTransactions(prev => prev.filter(rt => rt.accountId !== account.id));
+              setGoals(prev => prev.filter(goal => goal.linkedAccountId !== account.id));
+              setNotifications(prev => prev.filter(n => n.relatedId !== account.id));
+              break;
+          }
+          case 'transaction': {
+              const transaction = currentItem.data;
+              setTransactions(prevTransactions => {
+                  const updatedTransactions = prevTransactions.filter(tx => tx.id !== transaction.id);
+                  setAccounts(prevAccounts => prevAccounts.map(account => {
+                      if (account.id !== transaction.accountId) return account;
+                      const transactionsForAccount = updatedTransactions.filter(tx => tx.accountId === account.id);
+                      return { ...account, balanceHistory: recalculateBalanceHistory(transactionsForAccount) };
+                  }));
+                  return updatedTransactions;
+              });
+              break;
+          }
+          case 'recurringTransaction': {
+              const recurring = currentItem.data;
+              setRecurringTransactions(prev => prev.filter(rt => rt.id !== recurring.id));
+              setNotifications(prev => prev.filter(n => !n.relatedId.startsWith(`${recurring.id}-`)));
+              break;
+          }
+          case 'category': {
+              const cat = currentItem.data;
+              setCategories(prev => prev.filter(c => c.id !== cat.id));
+              setTransactions(prev => prev.map(tx => {
+                  if (tx.splits) {
+                      const newSplits = tx.splits.filter(s => s.category !== cat.name);
+                      if (newSplits.length === 0) return { ...tx, category: UNCATEGORIZED, splits: undefined };
+                      if (newSplits.length < tx.splits.length) return { ...tx, splits: newSplits };
+                  }
+                  if (tx.category === cat.name) return { ...tx, category: UNCATEGORIZED };
+                  return tx;
+              }));
+              setRecurringTransactions(prev => prev.map(rt => {
                   if (rt.splits) {
                       const newSplits = rt.splits.filter(s => s.category !== cat.name);
                       if (newSplits.length === 0) return { ...rt, category: UNCATEGORIZED, splits: undefined };
@@ -456,16 +460,19 @@ const App: React.FC = () => {
                   if (rt.category === cat.name) return { ...rt, category: UNCATEGORIZED };
                   return rt;
               }));
+              setNotifications(prev => prev.filter(n => !n.relatedId.startsWith(`budget-${cat.id}-`)));
               break;
           }
           case 'goal': {
-              setGoals(prev => prev.filter(g => g.id !== data.id));
+              const goal = currentItem.data;
+              setGoals(prev => prev.filter(g => g.id !== goal.id));
               break;
           }
       }
-            setIsConfirmModalOpen(false);
-            setItemToDelete(null);
-        }, [itemToDelete, transactions]);
+
+      setIsConfirmModalOpen(false);
+      setItemToDelete(null);
+  }, [itemToDelete]);
 
 
 
