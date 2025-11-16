@@ -3,30 +3,11 @@ import type { View } from '../App';
 import type { Account } from '../types';
 
 const AppLogo = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 24 24" aria-hidden="true">
-        <defs>
-            <radialGradient id="appLogoGoldGradient" cx="50%" cy="40%" r="60%" fx="50%" fy="30%">
-                <stop offset="0%" stopColor="#FDE047" /> {/* Tailwind yellow-300 */}
-                <stop offset="60%" stopColor="#F59E0B" /> {/* Tailwind amber-500 */}
-                <stop offset="100%" stopColor="#B45309" /> {/* Tailwind amber-700 */}
-            </radialGradient>
-        </defs>
-        {/* Coin Body */}
-        <circle cx="12" cy="12" r="11" fill="url(#appLogoGoldGradient)" />
-        <circle cx="12" cy="12" r="11" fill="transparent" stroke="#92400E" strokeWidth="1.2" />
-        {/* Inner Rim */}
-        <circle cx="12" cy="12" r="9.5" fill="transparent" stroke="#FBBF24" strokeOpacity="0.6" strokeWidth="1" />
-
-        {/* Simple Wink Face */}
-        <g stroke="#92400E" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-            {/* Left Eye */}
-            <circle cx="8.5" cy="10.5" r="0.5" fill="#92400E" stroke="none" />
-            {/* Right Eye (Wink) */}
-            <path d="M13.5 11.5 C 14.5 10, 15.5 10, 16.5 11.5" />
-            {/* Smile */}
-            <path d="M8 14 Q 12 16, 16 14" />
-        </g>
-    </svg>
+  <img 
+    src="Logo-Comptes-Sur-Moi.png" 
+    alt="Comptes Sur Moi logo" 
+    className="h-10 w-10 object-contain" 
+  />
 );
 
 const menuIcons = {
