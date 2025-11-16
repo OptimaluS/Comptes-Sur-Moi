@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:electron": "node ./scripts/update-build-date.js && npm run build && electron-builder"
+    "build:electron": "node ./scripts/update-build-date.cjs && npm run build && electron-builder"
   },
   "dependencies": {
     "@google/genai": "^1.29.1",
@@ -36,14 +36,16 @@
     "type": "git",
     "url": "https://github.com/OptimaluS/Comptes-Sur-Moi.git"
   },
-  "buildDate": "{{BUILD_DATE}}",
+  "buildDate": "2025-11-16 15:16:17",
   "author": "Christophe <optimalus.christophe@gmail.com>",
   "build": {
-    "publish": [{
-      "provider": "github",
-      "owner": "OptimaluS",
-      "repo": "Comptes-Sur-Moi"
-    }],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "OptimaluS",
+        "repo": "Comptes-Sur-Moi"
+      }
+    ],
     "appId": "com.comptessurmoi.app",
     "productName": "Comptes Sur Moi",
     "files": [

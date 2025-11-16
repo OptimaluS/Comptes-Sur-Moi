@@ -1,6 +1,10 @@
 directories:
   output: release
   buildResources: assets
+publish:
+  - provider: github
+    owner: OptimaluS
+    repo: Comptes-Sur-Moi
 appId: com.comptessurmoi.app
 productName: Comptes Sur Moi
 files:
