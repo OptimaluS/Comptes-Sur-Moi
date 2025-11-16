@@ -378,6 +378,22 @@ const App: React.FC = () => {
       if (recurringTxToEdit) {
           setRecurringTransactions(prev => prev.map(rt => rt.id === recurringTxToEdit.id ? { ...recurringTxToEdit, ...data } : rt));
       } else {
+          setRecurringTransactions(prev => [...prev, { ...data, id: crypto.randomUUID() }]);
+      }
+      setIsRecurringTxModalOpen(false);
+      setRecurringTxToEdit(null);
+  }, [categories, recurringTxToEdit]);
+
+  // --- Handlers pour la modale de catégorie ---
+  const handleOpenCategoryModal = useCallback((category: Category | null = null) => {
+      setCategoryToEdit(category);
+      setIsCategoryModalOpen(true);
+  }, []);
+
+  const handleSaveCategory = useCallback((categoryData: Omit<Category, 'id' | 'budget'>) => {
+      if (categoryToEdit) {
+          setCategories(prev => prev.map(cat => cat.id === categoryToEdit.id ? { ...categoryToEdit, ...categoryData } : cat));
+      } else {
           setCategories(prev => [...prev, { ...categoryData, id: crypto.randomUUID() }]);
       }
       setIsCategoryModalOpen(false);
