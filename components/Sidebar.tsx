@@ -2,11 +2,15 @@ import React from 'react';
 import type { View } from '../App';
 import type { Account } from '../types';
 
-const AppLogo = () => (
-  <img 
-    src="Logo-Comptes-Sur-Moi.png" 
-    alt="Comptes Sur Moi logo" 
-    className="h-10 w-10 object-contain" 
+interface AppLogoProps {
+  wink?: boolean;
+}
+
+const AppLogo: React.FC<AppLogoProps> = ({ wink }) => (
+  <img
+    src="Logo-Comptes-Sur-Moi.png"
+    alt="Comptes Sur Moi logo"
+    className={`h-10 w-10 object-contain${wink ? ' animate-wink' : ''}`}
   />
 );
 
@@ -35,9 +39,9 @@ interface NavItemProps {
 const NavItem: React.FC<NavItemProps> = ({ icon, label, isActive, onClick, disabled = false, tooltip }) => {
   const isDisabled = disabled || !onClick;
   
-  const activeClasses = isActive && !isDisabled
-    ? 'bg-indigo-100 text-indigo-600 font-bold' 
-    : 'text-gray-600 hover:bg-indigo-50/70 hover:text-indigo-600';
+    const activeClasses = isActive && !isDisabled
+      ? 'bg-white text-[#282a2c] font-bold shadow-md' 
+      : 'text-white hover:bg-white hover:text-[#282a2c] font-semibold';
     
   const disabledClasses = isDisabled ? 'opacity-50 cursor-not-allowed' : '';
     
@@ -64,14 +68,15 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, isActive, onClick, disab
 };
 
 interface SidebarProps {
-    activeView: View;
-    setActiveView: (view: View) => void;
-    accounts: Account[];
-    isSidebarOpen: boolean;
-    setIsSidebarOpen: (isOpen: boolean) => void;
+  activeView: View;
+  setActiveView: (view: View) => void;
+  accounts: Account[];
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: (isOpen: boolean) => void;
+  wink?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, accounts, isSidebarOpen, setIsSidebarOpen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, accounts, isSidebarOpen, setIsSidebarOpen, wink }) => {
   const hasAccounts = accounts.length > 0;
 
   const handleNavClick = (view: View) => {
@@ -80,15 +85,13 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, accounts, 
   };
 
   return (
-    <aside className={`w-64 bg-white p-4 flex flex-col shrink-0 border-r border-gray-200 fixed inset-y-0 left-0 z-40 transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-      <div className="flex items-center justify-between gap-3 px-2 pb-6 border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          <AppLogo />
-          <h1 className="text-xl font-bold text-gray-900 tracking-tight">
-            Comptes Sur Moi
-          </h1>
+    <aside className={`w-64 p-4 flex flex-col shrink-0 fixed inset-y-0 left-0 z-40 transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} bg-[#282a2c] border-r border-[#282a2c]`}>
+      <div className="flex items-center justify-between px-2 border-b border-gray-700" style={{height: '5rem'}}>
+        <div className="flex items-center justify-start px-2" style={{height: '5rem'}}>
+          <AppLogo wink={wink} />
+          <span className="text-lg font-bold text-white">Comptes Sur Moi</span>
         </div>
-        <button onClick={() => setIsSidebarOpen(false)} className="p-1 rounded-full text-gray-500 hover:bg-gray-100 lg:hidden" aria-label="Fermer le menu">
+        <button onClick={() => setIsSidebarOpen(false)} className="p-1 rounded-full text-gray-400 hover:bg-gray-700 lg:hidden" aria-label="Fermer le menu">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -99,69 +102,22 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, accounts, 
         <ul className="space-y-1.5">
           <NavItem icon={menuIcons.dashboard} label="Tableau de bord" isActive={activeView === 'dashboard'} onClick={() => handleNavClick('dashboard')} />
           <NavItem icon={menuIcons.accounts} label="Comptes" isActive={activeView === 'accounts'} onClick={() => handleNavClick('accounts')} />
-          <NavItem 
-            icon={menuIcons.chat} 
-            label="Assistant IA" 
-            isActive={activeView === 'chat'} 
-            onClick={() => handleNavClick('chat')}
-          />
-          <NavItem 
-            icon={menuIcons.transactions} 
-            label="Transactions" 
-            isActive={activeView === 'transactions'} 
-            onClick={() => handleNavClick('transactions')}
-            disabled={!hasAccounts}
-            tooltip={!hasAccounts ? "Veuillez d'abord créer un compte" : undefined}
-          />
-           <NavItem 
-            icon={menuIcons.categories} 
-            label="Catégories" 
-            isActive={activeView === 'categories'} 
-            onClick={() => handleNavClick('categories')}
-            disabled={!hasAccounts}
-            tooltip={!hasAccounts ? "Veuillez d'abord créer un compte" : undefined}
-          />
-          <NavItem 
-            icon={menuIcons.deadlines} 
-            label="Échéances" 
-            isActive={activeView === 'deadlines'} 
-            onClick={() => handleNavClick('deadlines')}
-            disabled={!hasAccounts}
-            tooltip={!hasAccounts ? "Veuillez d'abord créer un compte" : undefined}
-          />
-          <NavItem 
-            icon={menuIcons.budgets} 
-            label="Budgets" 
-            isActive={activeView === 'budgets'} 
-            onClick={() => handleNavClick('budgets')}
-            disabled={!hasAccounts}
-            tooltip={!hasAccounts ? "Veuillez d'abord créer un compte" : undefined}
-          />
-          <NavItem 
-            icon={menuIcons.goals} 
-            label="Objectifs" 
-            isActive={activeView === 'goals'} 
-            onClick={() => handleNavClick('goals')}
-            disabled={!hasAccounts}
-            tooltip={!hasAccounts ? "Veuillez d'abord créer un compte" : undefined}
-          />
-          <NavItem 
-            icon={menuIcons.reports} 
-            label="Rapports" 
-            isActive={activeView === 'reports'} 
-            onClick={() => handleNavClick('reports')}
-            disabled={!hasAccounts}
-            tooltip={!hasAccounts ? "Veuillez d'abord créer un compte" : undefined}
-          />
+          <NavItem icon={menuIcons.chat} label="Assistant IA" isActive={activeView === 'chat'} onClick={() => handleNavClick('chat')} />
+          <NavItem icon={menuIcons.transactions} label="Transactions" isActive={activeView === 'transactions'} onClick={() => handleNavClick('transactions')} disabled={!hasAccounts} tooltip={!hasAccounts ? "Veuillez d'abord créer un compte" : undefined} />
+          <NavItem icon={menuIcons.categories} label="Catégories" isActive={activeView === 'categories'} onClick={() => handleNavClick('categories')} disabled={!hasAccounts} tooltip={!hasAccounts ? "Veuillez d'abord créer un compte" : undefined} />
+          <NavItem icon={menuIcons.deadlines} label="Échéances" isActive={activeView === 'deadlines'} onClick={() => handleNavClick('deadlines')} disabled={!hasAccounts} tooltip={!hasAccounts ? "Veuillez d'abord créer un compte" : undefined} />
+          <NavItem icon={menuIcons.budgets} label="Budgets" isActive={activeView === 'budgets'} onClick={() => handleNavClick('budgets')} disabled={!hasAccounts} tooltip={!hasAccounts ? "Veuillez d'abord créer un compte" : undefined} />
+          <NavItem icon={menuIcons.goals} label="Objectifs" isActive={activeView === 'goals'} onClick={() => handleNavClick('goals')} disabled={!hasAccounts} tooltip={!hasAccounts ? "Veuillez d'abord créer un compte" : undefined} />
+          <NavItem icon={menuIcons.reports} label="Rapports" isActive={activeView === 'reports'} onClick={() => handleNavClick('reports')} disabled={!hasAccounts} tooltip={!hasAccounts ? "Veuillez d'abord créer un compte" : undefined} />
         </ul>
       </nav>
 
       <div className="mt-auto">
-        <ul className="space-y-1.5">
-            <NavItem icon={menuIcons.settings} label="Paramètres" isActive={activeView === 'settings'} onClick={() => handleNavClick('settings')} />
+        <ul className="space-y-2">
+          <NavItem icon={menuIcons.settings} label="Paramètres" isActive={activeView === 'settings'} onClick={() => handleNavClick('settings')} />
         </ul>
-        <div className="mt-4 pt-4 border-t border-gray-200 text-xs text-gray-500 text-center">
-            <p>Vos données sont sauvegardées localement sur votre appareil.</p>
+        <div className="mt-4 pt-4 border-t border-gray-700 text-xs text-gray-300 text-center">
+          <p>Vos données sont sauvegardées localement sur votre appareil.</p>
         </div>
       </div>
     </aside>

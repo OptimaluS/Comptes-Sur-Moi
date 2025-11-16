@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+// Contexte clin d'œil
+const WinkContext = React.createContext({ triggerWink: () => {} });
+// État pour animation clin d'œil
+// ...le reste du code...
 import Header from './components/Header';
+import { getGreeting } from './components/Dashboard';
 import Dashboard from './components/Dashboard';
 import Sidebar from './components/Sidebar';
 import Accounts from './components/Accounts';
@@ -58,43 +63,48 @@ const App: React.FC = () => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [toasts, setToasts] = useState<Notification[]>([]);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    // ...autres hooks si besoin...
+    // Animation clin d'œil
+    const [wink, setWink] = useState(false);
+    const triggerWink = useCallback(() => {
+        setWink(true);
+        setTimeout(() => setWink(false), 1000);
+    }, []);
 
-    // Sauvegarde automatique toutes les 5 minutes
     useEffect(() => {
-        const interval = setInterval(async () => {
-            try {
-                const stateToSave = {
-                    accounts,
-                    transactions,
-                    recurringTransactions,
-                    categories,
-                    notificationSettings,
-                    goals,
-                };
-                await window.api.saveData(stateToSave);
-                if (window.api.saveBackup) {
-                    await window.api.saveBackup(stateToSave, 'auto');
+        const interval = setInterval(() => {
+            (async () => {
+                try {
+                    const stateToSave = {
+                        accounts,
+                        transactions,
+                        recurringTransactions,
+                        categories,
+                        notificationSettings,
+                        goals
+                    };
+                    await window.api.saveData(stateToSave);
+                    if (window.api.saveBackup) {
+                        await window.api.saveBackup(stateToSave, 'auto');
+                        setToasts(prev => [...prev, {
+                            id: crypto.randomUUID(),
+                            type: NotificationType.DEADLINE_SOON,
+                            message: 'Une sauvegarde automatique a été créée.',
+                            date: new Date(),
+                            isRead: false,
+                            relatedId: 'auto-backup'
+                        }]);
+                    }
+                } catch (err) {
                     setToasts(prev => [...prev, {
                         id: crypto.randomUUID(),
-                        type: NotificationType.DEADLINE_SOON,
-                        message: 'Une sauvegarde automatique a été créée.',
+                        type: NotificationType.OVERDUE,
+                        message: 'Erreur lors de la sauvegarde automatique.',
                         date: new Date(),
                         isRead: false,
-                        relatedId: 'auto-backup'
+                        relatedId: 'auto-save-error'
                     }]);
                 }
-                // On ne garde qu'une seule notification pour la sauvegarde automatique
-            } catch (err) {
-                setToasts(prev => [...prev, {
-                    id: crypto.randomUUID(),
-                    type: NotificationType.OVERDUE,
-                    message: 'Erreur lors de la sauvegarde automatique.',
-                    date: new Date(),
-                    isRead: false,
-                    relatedId: 'auto-save-error'
-                }]);
-            }
+            })();
         }, 5 * 60 * 1000); // 5 minutes
         return () => clearInterval(interval);
     }, [accounts, transactions, recurringTransactions, categories, notificationSettings, goals]);
@@ -252,13 +262,16 @@ const App: React.FC = () => {
       setIsTxModalOpen(true);
   }, []);
 
-  const handleCloseTxModal = useCallback(() => {
-    setIsTxModalOpen(false);
-    setTransactionToEdit(null);
-    setPrefilledTxData(null);
-  }, []);
+    const handleCloseTxModal = useCallback(() => {
+        setIsTxModalOpen(false);
+        setTransactionToEdit(null);
+        setPrefilledTxData(null);
+        setTimeout(() => {
+            triggerWink();
+        }, 1000);
+    }, [triggerWink]);
   
-  const handleSaveTransaction = useCallback((data: Omit<Transaction, 'id'>) => {
+    const handleSaveTransaction = useCallback((data: Omit<Transaction, 'id'>) => {
       const categoryMap = new Map(categories.map(cat => [cat.name, cat]));
       const categoriesToCreate: string[] = [];
 
@@ -297,6 +310,7 @@ const App: React.FC = () => {
           const newBalanceHistory = recalculateBalanceHistory(updatedTransactions.filter(t => t.accountId === account.id));
           return { ...account, balanceHistory: newBalanceHistory };
       }));
+      triggerWink();
       handleCloseTxModal();
   }, [transactionToEdit, transactions, categories, handleCloseTxModal]);
 
@@ -364,36 +378,6 @@ const App: React.FC = () => {
       if (recurringTxToEdit) {
           setRecurringTransactions(prev => prev.map(rt => rt.id === recurringTxToEdit.id ? { ...recurringTxToEdit, ...data } : rt));
       } else {
-          setRecurringTransactions(prev => [...prev, { ...data, id: crypto.randomUUID() }]);
-      }
-      setIsRecurringTxModalOpen(false);
-      setRecurringTxToEdit(null);
-  }, [recurringTxToEdit, categories]);
-
-  // --- Handlers pour la modale de catégorie ---
-  const handleOpenCategoryModal = useCallback((category: Category | null = null) => {
-    setCategoryToEdit(category);
-    setIsCategoryModalOpen(true);
-  }, []);
-
-  const handleSaveCategory = useCallback((categoryData: Omit<Category, 'id' | 'budget'>) => {
-      if (categoryToEdit) {
-          const oldName = categoryToEdit.name;
-          const newName = categoryData.name;
-          setCategories(prev => prev.map(c => c.id === categoryToEdit.id ? { ...c, ...categoryData } : c));
-          if (oldName !== newName) {
-              setTransactions(prev => prev.map(t => {
-                  if (t.splits) return { ...t, splits: t.splits.map(s => s.category === oldName ? { ...s, category: newName } : s) };
-                  if (t.category === oldName) return { ...t, category: newName };
-                  return t;
-              }));
-              setRecurringTransactions(prev => prev.map(rt => {
-                   if (rt.splits) return { ...rt, splits: rt.splits.map(s => s.category === oldName ? { ...s, category: newName } : s) };
-                  if (rt.category === oldName) return { ...rt, category: newName };
-                  return rt;
-              }));
-          }
-      } else {
           setCategories(prev => [...prev, { ...categoryData, id: crypto.randomUUID() }]);
       }
       setIsCategoryModalOpen(false);
@@ -426,43 +410,44 @@ const App: React.FC = () => {
       if (!itemToDelete) return;
       const { type, data } = itemToDelete.item;
 
-      switch(type) {
-          case 'account': {
-              const accountId = data.id;
-              setAccounts(prev => prev.filter(acc => acc.id !== accountId));
-              setTransactions(prev => prev.filter(tx => tx.accountId !== accountId));
-              setGoals(prev => prev.filter(g => g.linkedAccountId !== accountId));
-              break;
-          }
-          case 'transaction': {
-              const tx = data;
-              const updatedTxs = transactions.filter(t => t.id !== tx.id);
-              setTransactions(updatedTxs);
-              setAccounts(prev => prev.map(acc => {
-                  if (acc.id === tx.accountId) {
-                      return { ...acc, balanceHistory: recalculateBalanceHistory(updatedTxs.filter(t => t.accountId === acc.id)) };
-                  }
-                  return acc;
-              }));
-              break;
-          }
-          case 'recurringTransaction': {
-              setRecurringTransactions(prev => prev.filter(rt => rt.id !== data.id));
-              break;
-          }
-          case 'category': {
-              const cat = data;
-              setCategories(prev => prev.filter(c => c.id !== cat.id));
-              setTransactions(prev => prev.map(t => {
-                  if (t.splits) {
-                      const newSplits = t.splits.filter(s => s.category !== cat.name);
-                      if (newSplits.length === 0) return { ...t, category: UNCATEGORIZED, splits: undefined };
-                      if (newSplits.length < t.splits.length) return { ...t, splits: newSplits };
-                  }
-                  if (t.category === cat.name) return { ...t, category: UNCATEGORIZED };
-                  return t;
-              }));
-              setRecurringTransactions(prev => prev.map(rt => {
+    useEffect(() => {
+        const interval = setInterval(() => {
+            (async () => {
+                try {
+                    const stateToSave = {
+                        accounts,
+                        transactions,
+                        recurringTransactions,
+                        categories,
+                        notificationSettings,
+                        goals
+                    };
+                    await window.api.saveData(stateToSave);
+                    if (window.api.saveBackup) {
+                        await window.api.saveBackup(stateToSave, 'auto');
+                        setToasts(prev => [...prev, {
+                            id: crypto.randomUUID(),
+                            type: NotificationType.DEADLINE_SOON,
+                            message: 'Une sauvegarde automatique a été créée.',
+                            date: new Date(),
+                            isRead: false,
+                            relatedId: 'auto-backup'
+                        }]);
+                    }
+                } catch (err) {
+                    setToasts(prev => [...prev, {
+                        id: crypto.randomUUID(),
+                        type: NotificationType.OVERDUE,
+                        message: 'Erreur lors de la sauvegarde automatique.',
+                        date: new Date(),
+                        isRead: false,
+                        relatedId: 'auto-save-error'
+                    }]);
+                }
+            })();
+        }, 5 * 60 * 1000); // 5 minutes
+        return () => clearInterval(interval);
+    }, [accounts, transactions, recurringTransactions, categories, notificationSettings, goals]);
                   if (rt.splits) {
                       const newSplits = rt.splits.filter(s => s.category !== cat.name);
                       if (newSplits.length === 0) return { ...rt, category: UNCATEGORIZED, splits: undefined };
@@ -478,9 +463,11 @@ const App: React.FC = () => {
               break;
           }
       }
-      setIsConfirmModalOpen(false);
-      setItemToDelete(null);
-  }, [itemToDelete, transactions]);
+            setIsConfirmModalOpen(false);
+            setItemToDelete(null);
+        }, [itemToDelete, transactions]);
+
+
 
 
   // Effet pour générer les transactions récurrentes
@@ -709,19 +696,21 @@ const App: React.FC = () => {
               aria-hidden="true"
           />
       )}
-      <Sidebar 
-        activeView={activeView} 
-        setActiveView={setActiveView} 
-        accounts={accounts} 
-        isSidebarOpen={isSidebarOpen}
-        setIsSidebarOpen={setIsSidebarOpen}
-      />
+            <Sidebar 
+                activeView={activeView} 
+                setActiveView={setActiveView} 
+                accounts={accounts} 
+                isSidebarOpen={isSidebarOpen}
+                setIsSidebarOpen={setIsSidebarOpen}
+                wink={wink}
+            />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header 
-          notifications={notifications} 
-          setNotifications={setNotifications}
-          setIsSidebarOpen={setIsSidebarOpen}
-        />
+                    notifications={notifications} 
+                    setNotifications={setNotifications}
+                    setIsSidebarOpen={setIsSidebarOpen}
+                    greeting={getGreeting()}
+                />
                 <UpdateNotification />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {activeView === 'dashboard' && <Dashboard 

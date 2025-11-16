@@ -16,7 +16,7 @@ interface DashboardProps {
     setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
 }
 
-const getGreeting = () => {
+export const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Bonjour !";
     if (hour < 18) return "Bon après-midi !";
@@ -232,8 +232,7 @@ const Dashboard: React.FC<DashboardProps> = ({ accounts, transactions, categorie
     const totalBalance = useMemo(() => accounts.reduce((sum, account) => sum + (account.balanceHistory[0]?.amount ?? 0), 0), [accounts]);
 
     return (
-        <div className="container mx-auto">
-            <h2 className="text-3xl font-bold text-gray-900">{getGreeting()}</h2>
+        <div className="container mx-auto bg-white rounded-2xl shadow-sm px-8 py-8 mt-6">
             <div className="space-y-4 my-6">
                 {criticalNotifications.map(notification => (
                     <AlertBanner key={notification.id} notification={notification} onDismiss={handleDismissBanner} />
