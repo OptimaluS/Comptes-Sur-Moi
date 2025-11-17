@@ -35,6 +35,29 @@ const ToggleOption: React.FC<{ title: string; description: string; enabled: bool
 const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
     // Section Profil
     const [userName, setUserName] = useState(() => localStorage.getItem('userName') || '');
+
+// Clé API Google GenAI
+const [apiKey, setApiKey] = useState<string>('');
+const [apiKeySaved, setApiKeySaved] = useState(false);
+
+useEffect(() => {
+    if (window.api && window.api.getGenaiApiKey) {
+        const key = window.api.getGenaiApiKey();
+        if (key) setApiKey(key);
+    }
+}, []);
+
+const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setApiKey(e.target.value);
+    setApiKeySaved(false);
+};
+const handleSaveApiKey = () => {
+    if (window.api && window.api.setGenaiApiKey) {
+        window.api.setGenaiApiKey(apiKey);
+        setApiKeySaved(true);
+        setTimeout(() => setApiKeySaved(false), 2000);
+    }
+};
     const [showConfirm, setShowConfirm] = useState(false);
     useEffect(() => {
         localStorage.setItem('userName', userName);
@@ -272,6 +295,28 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
                     />
                     {showConfirm && (
                         <div className="mt-2 text-green-600 text-sm font-semibold">Prénom enregistré !</div>
+                    )}
+                    <hr className="my-6" />
+                    <h3 className="text-xl font-bold mb-2 text-gray-800">Clé API Google GenAI</h3>
+                    <label htmlFor="genaiApiKey" className="block mb-1 font-medium">Votre clé API Gemini</label>
+                    <input
+                        id="genaiApiKey"
+                        type="text"
+                        value={apiKey}
+                        onChange={handleApiKeyChange}
+                        className="border rounded px-3 py-2 w-full max-w-lg"
+                        placeholder="Collez votre clé API Google GenAI ici"
+                    />
+                    <button
+                        type="button"
+                        onClick={handleSaveApiKey}
+                        className="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg"
+                        disabled={!apiKey}
+                    >
+                        Sauvegarder la clé
+                    </button>
+                    {apiKeySaved && (
+                        <div className="mt-2 text-green-600 text-sm font-semibold">Clé API enregistrée !</div>
                     )}
                 </div>
                 {/* Notifications */}

@@ -5,12 +5,14 @@
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
+    "electron:dev": "electron .",
     "build": "vite build",
     "build:electron": "node ./scripts/update-build-date.cjs && npm run build && electron-builder"
   },
   "dependencies": {
     "@google/genai": "^1.29.1",
     "autoprefixer": "^10.4.22",
+    "electron-store": "^11.0.2",
     "electron-updater": "^6.6.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.3",
@@ -36,14 +38,16 @@
     "type": "git",
     "url": "https://github.com/OptimaluS/Comptes-Sur-Moi.git"
   },
-  "buildDate": "{{BUILD_DATE}}",
+  "buildDate": "2025-11-16 15:42:09",
   "author": "Christophe <optimalus.christophe@gmail.com>",
   "build": {
-    "publish": [{
-      "provider": "github",
-      "owner": "OptimaluS",
-      "repo": "Comptes-Sur-Moi"
-    }],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "OptimaluS",
+        "repo": "Comptes-Sur-Moi"
+      }
+    ],
     "appId": "com.comptessurmoi.app",
     "productName": "Comptes Sur Moi",
     "files": [

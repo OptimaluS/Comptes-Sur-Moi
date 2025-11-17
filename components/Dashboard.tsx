@@ -14,7 +14,6 @@ interface DashboardProps {
     recurringTransactions: RecurringTransaction[];
     notifications: Notification[];
     setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
-    goals: Goal[];
 }
 
 export const getGreeting = () => {
@@ -110,7 +109,7 @@ const SpendingDonutChart: React.FC<{ data: { name: string; color: string; percen
 };
 
 
-const Dashboard: React.FC<DashboardProps> = ({ accounts, transactions, categories, recurringTransactions, notifications, setNotifications, goals }) => {
+const Dashboard: React.FC<DashboardProps> = ({ accounts, transactions, categories, recurringTransactions, notifications, setNotifications }) => {
     const criticalNotifications = notifications.filter(n =>
         !n.isRead && (n.type === NotificationType.OVERDUE || n.type === NotificationType.BUDGET_EXCEEDED)
     );
@@ -245,7 +244,6 @@ const Dashboard: React.FC<DashboardProps> = ({ accounts, transactions, categorie
                     accounts={accounts} 
                     transactions={transactions} 
                     categories={categories}
-                    goals={goals}
                 />
             </div>
 
