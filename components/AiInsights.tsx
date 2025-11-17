@@ -42,7 +42,7 @@ const AiInsights: React.FC<AiInsightsProps> = ({ accounts, transactions, categor
             setError(null);
             
             try {
-                const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+                const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
                 const now = new Date();
                 const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
