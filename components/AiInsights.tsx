@@ -2,10 +2,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
 import type { Account, Transaction, Category } from '../types';
 
+import type { Goal } from '../types';
+
 interface AiInsightsProps {
     accounts: Account[];
     transactions: Transaction[];
     categories: Category[];
+    goals: Goal[];
 }
 
 const InsightSkeleton: React.FC = () => (
@@ -19,7 +22,7 @@ const InsightSkeleton: React.FC = () => (
 );
 
 
-const AiInsights: React.FC<AiInsightsProps> = ({ accounts, transactions, categories }) => {
+const AiInsights: React.FC<AiInsightsProps> = ({ accounts, transactions, categories, goals }) => {
     const [insights, setInsights] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -42,15 +45,24 @@ const AiInsights: React.FC<AiInsightsProps> = ({ accounts, transactions, categor
             setError(null);
             
             try {
-                const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
+                // Récupère la clé API via l'API IPC
+                const apiKey = window.api?.getGenaiApiKey ? window.api.getGenaiApiKey() : '';
+                if (!apiKey) throw new Error("Clé API Google GenAI manquante. Veuillez la renseigner dans les paramètres.");
+                const ai = new GoogleGenAI({ apiKey });
                 const now = new Date();
                 const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
                 const formatDataForPrompt = () => {
                     const accountsSummary = accounts.map(a => `  - ${a.name} (Solde: ${a.balanceHistory[0]?.amount.toFixed(2)}€)`).join('\n');
-                    const goalsSummary = accounts.filter(a => a.goalName && a.goalAmount)
-                        .map(a => `  - Objectif '${a.goalName}' pour le compte '${a.name}': ${a.balanceHistory[0]?.amount.toFixed(2)}€ / ${a.goalAmount?.toFixed(2)}€`)
-                        .join('\n');
+                                // Correction : les objectifs sont dans un tableau séparé, pas dans Account
+                                const goalsSummary = goals && goals.length > 0
+                                    ? goals.map(g => {
+                                            const acc = accounts.find(a => a.id === g.linkedAccountId);
+                                            return acc
+                                                ? `  - Objectif '${g.name}' pour le compte '${acc.name}': ${acc.balanceHistory[0]?.amount.toFixed(2)}€ / ${g.targetAmount?.toFixed(2)}€`
+                                                : null;
+                                        }).filter(Boolean).join('\n')
+                                    : "Aucun";
                     const budgetsSummary = categories.filter(c => c.budget && c.budget > 0)
                         .map(c => `  - ${c.name}: ${c.budget.toFixed(2)}€`)
                         .join('\n');
