@@ -13961,7 +13961,7 @@ function createWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
-      preload: path$m.join(__dirname$1, "../electron/preload.js")
+      preload: path$m.join(__dirname$1, "preload.mjs")
     }
   });
   win.removeMenu();
