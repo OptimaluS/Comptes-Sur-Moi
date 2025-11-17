@@ -80,6 +80,7 @@ export interface NotificationSettings {
     lowBalance: NotificationMethod;
     deadlines: NotificationMethod;
     budgets: NotificationMethod;
+    geminiApiKey?: string;
 }
 
 export interface Category {

@@ -743,6 +743,8 @@ const App: React.FC = () => {
               recurringTransactions={recurringTransactions}
               notifications={notifications} 
               setNotifications={setNotifications} 
+              goals={goals}
+              geminiApiKey={notificationSettings.geminiApiKey || ''}
           />}
           {activeView === 'accounts' && (
             <Accounts

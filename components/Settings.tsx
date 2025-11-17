@@ -258,6 +258,19 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
         <div className="container mx-auto">
             <h2 className="text-3xl font-bold mb-6 text-gray-900">Paramètres</h2>
             <div className="max-w-4xl space-y-8">
+                                {/* Clé API Gemini */}
+                                <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-200">
+                                    <h3 className="text-xl font-bold mb-2 text-gray-800">Clé API Gemini (Google)</h3>
+                                    <p className="text-sm text-gray-500 mb-2">Pour utiliser l’intelligence artificielle, vous devez obtenir une clé API Gemini gratuite sur le site de Google.<br/>Voici comment faire :<br/>1. Rendez-vous sur <a href='https://aistudio.google.com/app/apikey' target='_blank' rel='noopener noreferrer' className='text-indigo-600 underline'>aistudio.google.com/app/apikey</a><br/>2. Connectez-vous avec votre compte Google.<br/>3. Cliquez sur “Créer une clé API” et copiez la clé affichée.<br/>4. Collez-la ci-dessous.</p>
+                                    <input
+                                        id="gemini-api-key"
+                                        type="text"
+                                        value={settings.geminiApiKey || ''}
+                                        onChange={e => setSettings(prev => ({ ...prev, geminiApiKey: e.target.value }))}
+                                        className="border rounded px-3 py-2 w-full max-w-xs"
+                                        placeholder="Collez votre clé API Gemini ici..."
+                                    />
+                                </div>
                 {/* Section Profil */}
                 <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-200">
                     <h3 className="text-xl font-bold mb-2 text-gray-800">Profil</h3>
@@ -274,6 +287,7 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
                         <div className="mt-2 text-green-600 text-sm font-semibold">Prénom enregistré !</div>
                     )}
                 </div>
+                {/* Section IA */}
                 {/* Notifications */}
                 <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-200">
                     <h3 className="text-xl font-bold text-gray-800">Notifications</h3>
@@ -520,6 +534,19 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
                         onChange={e => setUserName(e.target.value)}
                         className="border rounded px-3 py-2 w-full max-w-xs"
                         placeholder="Entrez votre prénom"
+                    />
+                </section>
+                {/* Section IA */}
+                <section className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-200">
+                    <h3 className="text-xl font-bold mb-2 text-gray-800">IA</h3>
+                        <label htmlFor="gemini-api-key" className="block mb-1 font-medium"></label>
+                    <input
+                        id="gemini-api-key"
+                        type="text"
+                        value={settings.geminiApiKey || ''}
+                        onChange={e => setSettings(prev => ({ ...prev, geminiApiKey: e.target.value }))}
+                        className="border rounded px-3 py-2 w-full max-w-xs"
+                        placeholder="Collez votre clé API Gemini ici..."
                     />
                 </section>
                 {/* Les autres sections des paramètres */}
