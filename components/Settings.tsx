@@ -33,6 +33,25 @@ const ToggleOption: React.FC<{ title: string; description: string; enabled: bool
 };
 
 const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
+        const [isGeminiEditMode, setIsGeminiEditMode] = useState(false);
+        const [geminiKeyError, setGeminiKeyError] = useState<string | null>(null);
+        const [showGeminiConfirm, setShowGeminiConfirm] = useState(false);
+        useEffect(() => {
+            if (settings.geminiApiKey && geminiKeyError === null) {
+                setShowGeminiConfirm(true);
+                const timer = setTimeout(() => setShowGeminiConfirm(false), 2000);
+                return () => clearTimeout(timer);
+            }
+        }, [settings.geminiApiKey, geminiKeyError]);
+            const handleGeminiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                const value = e.target.value;
+                setSettings(prev => ({ ...prev, geminiApiKey: value }));
+                if (value && !/^AIza[0-9A-Za-z-_]{35,}$/.test(value)) {
+                    setGeminiKeyError("Le format de la clé semble incorrect. Elle doit commencer par 'AIza' et contenir au moins 39 caractères.");
+                } else {
+                    setGeminiKeyError(null);
+                }
+            };
     // Section Profil
     const [userName, setUserName] = useState(() => localStorage.getItem('userName') || '');
     const [showConfirm, setShowConfirm] = useState(false);
@@ -266,10 +285,31 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
                                         id="gemini-api-key"
                                         type="text"
                                         value={settings.geminiApiKey || ''}
-                                        onChange={e => setSettings(prev => ({ ...prev, geminiApiKey: e.target.value }))}
-                                        className="border rounded px-3 py-2 w-full max-w-xs"
+                                        onChange={handleGeminiKeyChange}
+                                        className={`border rounded px-3 py-2 w-full max-w-xs ${geminiKeyError ? 'border-red-500' : 'border-gray-300'} ${(settings.geminiApiKey && !geminiKeyError && !isGeminiEditMode) ? 'blur-sm' : ''}`}
                                         placeholder="Collez votre clé API Gemini ici..."
+                                        disabled={!!settings.geminiApiKey && !geminiKeyError && !isGeminiEditMode}
                                     />
+                                    {(settings.geminiApiKey && !geminiKeyError && !isGeminiEditMode) && (
+                                        <button
+                                            type="button"
+                                            className="ml-2 px-3 py-1 rounded bg-indigo-100 text-indigo-700 font-semibold text-sm hover:bg-indigo-200 transition-colors"
+                                            onClick={() => setIsGeminiEditMode(true)}
+                                        >Modifier</button>
+                                    )}
+                                    {isGeminiEditMode && (
+                                        <button
+                                            type="button"
+                                            className="ml-2 px-3 py-1 rounded bg-gray-100 text-gray-700 font-semibold text-sm hover:bg-gray-200 transition-colors"
+                                            onClick={() => setIsGeminiEditMode(false)}
+                                        >Valider</button>
+                                    )}
+                                    {showGeminiConfirm && (
+                                        <div className="mt-2 text-green-600 text-sm font-semibold">Clé enregistrée !</div>
+                                    )}
+                                    {geminiKeyError && (
+                                        <div className="mt-2 text-red-600 text-sm font-semibold">{geminiKeyError}</div>
+                                    )}
                                 </div>
                 {/* Section Profil */}
                 <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-200">
