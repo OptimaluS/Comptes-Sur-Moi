@@ -27,6 +27,7 @@ const AiInsights: React.FC<AiInsightsProps> = ({ accounts, transactions, categor
     const [insights, setInsights] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     const dataSignature = useMemo(() => {
         const totalBalance = accounts.reduce((sum, acc) => sum + (acc.balanceHistory[0]?.amount ?? 0), 0);
@@ -121,8 +122,7 @@ const AiInsights: React.FC<AiInsightsProps> = ({ accounts, transactions, categor
         };
 
         generateInsights();
-
-    }, [dataSignature, accounts, transactions, categories]);
+    }, [dataSignature, accounts, transactions, categories, refreshKey]);
 
     if (isLoading) {
         return (
@@ -145,9 +145,17 @@ const AiInsights: React.FC<AiInsightsProps> = ({ accounts, transactions, categor
     
     return (
         <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-             <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-500" viewBox="0 0 20 20" fill="currentColor"><path d="M10.394 2.08a1 1 0 00-1.082.186l-6.25 6.25a1 1 0 000 1.414l8.75 8.75a1 1 0 001.414 0l6.25-6.25a1 1 0 00-.186-1.082l-5-2.5a1 1 0 00-1.082.186l-2.22 2.22a1 1 0 01-1.414 0l-2.122-2.122a1 1 0 010-1.414l2.22-2.22a1 1 0 00-.186-1.082l-2.5-5z" /><path d="M9 4.75A.75.75 0 019.75 4h.5a.75.75 0 010 1.5h-.5A.75.75 0 019 4.75zM11.75 6h.5a.75.75 0 010 1.5h-.5a.75.75 0 010-1.5zM4 9.75A.75.75 0 014.75 9h.5a.75.75 0 010 1.5h-.5A.75.75 0 014 9.75zM6 11.75a.75.75 0 01.75-.75h.5a.75.75 0 010 1.5h-.5a.75.75 0 01-.75-.75z" /></svg>
                 <span>Aperçus de l'IA</span>
+                <button
+                    className="ml-2 px-2 py-1 rounded bg-indigo-100 text-indigo-700 text-xs font-semibold hover:bg-indigo-200 transition flex items-center gap-1"
+                    title="Actualiser l'analyse IA"
+                    onClick={() => setRefreshKey(k => k + 1)}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h5M7 7l9 9M20 20v-5h-5M17 17l-9-9" /></svg>
+                    Actualiser
+                </button>
             </h3>
             <div className="space-y-3">
                 {insights.map((insight, index) => (
