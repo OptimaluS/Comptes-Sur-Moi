@@ -1,12 +1,1 @@
-"use strict";
-const { contextBridge, ipcRenderer } = require("electron");
-contextBridge.exposeInMainWorld("api", {
-  saveData: (data) => ipcRenderer.invoke("save-data", data),
-  readData: () => ipcRenderer.invoke("read-data"),
-  exportData: (data) => ipcRenderer.invoke("export-data", data),
-  importData: () => ipcRenderer.invoke("import-data"),
-  chooseBackupLocation: () => ipcRenderer.invoke("choose-backup-location"),
-  saveBackup: (data, type) => ipcRenderer.invoke("save-backup", data, type),
-  listBackups: () => ipcRenderer.invoke("list-backups"),
-  restoreBackup: (backupPath) => ipcRenderer.invoke("restore-backup", backupPath)
-});
+"use strict";const{contextBridge:t,ipcRenderer:a}=require("electron");t.exposeInMainWorld("api",{saveData:e=>a.invoke("save-data",e),readData:()=>a.invoke("read-data"),exportData:e=>a.invoke("export-data",e),importData:()=>a.invoke("import-data"),chooseBackupLocation:()=>a.invoke("choose-backup-location"),saveBackup:(e,o)=>a.invoke("save-backup",e,o),listBackups:()=>a.invoke("list-backups"),restoreBackup:e=>a.invoke("restore-backup",e)});

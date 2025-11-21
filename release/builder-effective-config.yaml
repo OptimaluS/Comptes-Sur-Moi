@@ -1,0 +1,20 @@
+directories:
+  output: release
+  buildResources: assets
+publish:
+  - provider: github
+    owner: OptimaluS
+    repo: Comptes-Sur-Moi
+appId: com.comptessurmoi.app
+productName: Comptes Sur Moi
+files:
+  - filter:
+      - dist/**/*
+      - dist-electron/**/*
+win:
+  icon: Logo-Comptes-Sur-Moi.ico
+nsis:
+  oneClick: false
+  perMachine: true
+  allowToChangeInstallationDirectory: true
+electronVersion: 31.7.7
