@@ -275,6 +275,38 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
 
     return (
         <div className="container mx-auto">
+            {/* Section Soutenir le projet mise en avant */}
+            <div className="max-w-3xl mx-auto animate-fade-in-up mb-10">
+                <section className="relative overflow-hidden rounded-2xl shadow-lg border border-indigo-200 bg-gradient-to-br from-indigo-50 via-blue-50 to-white p-8 flex flex-col items-center text-center">
+                    <div className="absolute -top-8 right-8 animate-bounce">
+                        <span className="inline-block bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full shadow">Nouveau&nbsp;!</span>
+                    </div>
+                    <h3 className="text-2xl font-extrabold text-indigo-700 mb-2 flex items-center justify-center gap-2">
+                        <span>💖</span> Soutenir le projet
+                    </h3>
+                    <p className="text-gray-700 mb-6 max-w-xl mx-auto text-base font-medium">Comptes Sur Moi est une application gratuite développée par un passionné. Si cet outil vous est utile, vous pouvez soutenir son développement en faisant un don ou en devenant sponsor.</p>
+                    <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                        <a
+                            href="https://github.com/sponsors/OptimaluS"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full sm:w-auto flex items-center justify-center gap-3 bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:scale-105"
+                        >
+                            <span>💖</span>
+                            Me sponsoriser sur GitHub
+                        </a>
+                        <a
+                            href="https://www.paypal.com/paypalme/optimalus"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full sm:w-auto flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:scale-105"
+                        >
+                            <span>🔒</span>
+                            Faire un don sécurisé via Paypal
+                        </a>
+                    </div>
+                </section>
+            </div>
             <h2 className="text-3xl font-bold mb-6 text-gray-900">Paramètres</h2>
             <div className="max-w-4xl space-y-8">
                                 {/* Clé API Gemini */}
@@ -535,27 +567,6 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
                         enabled={autoUpdate}
                         onToggle={handleToggleAutoUpdate}
                     />
-                </div>
-                {/* Soutenir le projet */}
-                <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-200">
-                    <h3 className="text-xl font-bold text-gray-800">Soutenir le projet</h3>
-                    <p className="text-gray-500 mt-1 mb-4">Comptes Sur Moi est une application gratuite développée par un passionné. Si cet outil vous est utile, vous pouvez m'aider à financer son développement futur en m'offrant un café !</p>
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <button 
-                            type="button"
-                            className="w-full sm:w-auto flex items-center justify-center gap-3 bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-                        >
-                            <span>💖</span>
-                            Me Sponsoriser sur GitHub
-                        </button>
-                        <button 
-                            type="button"
-                            className="w-full sm:w-auto flex items-center justify-center gap-3 bg-amber-400 hover:bg-amber-500 text-amber-900 font-bold py-3 px-6 rounded-lg transition-colors"
-                        >
-                            <span>☕</span>
-                            M'offrir un café
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
