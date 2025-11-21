@@ -1,3 +1,7 @@
+// Handler pour exposer la version de l'app à l'UI
+ipcMain.handle('get-version', () => {
+  return app.getVersion();
+});
 // --- MISE À JOUR AUTOMATIQUE ---
 import { autoUpdater } from 'electron-updater';
 

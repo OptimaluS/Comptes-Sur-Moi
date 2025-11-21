@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('api', {
   saveBackup: (data: any, type?: string) => ipcRenderer.invoke('save-backup', data, type),
   listBackups: () => ipcRenderer.invoke('list-backups'),
   restoreBackup: (backupPath: string) => ipcRenderer.invoke('restore-backup', backupPath),
+  getVersion: () => ipcRenderer.invoke('get-version'),
 });
 
 // --------- Preload scripts can use Node.js API (eg. `process.versions`) ---------

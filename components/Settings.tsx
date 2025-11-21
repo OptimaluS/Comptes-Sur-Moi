@@ -66,24 +66,19 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
     // Version de l'app
     const [version, setVersion] = useState<string>('');
     useEffect(() => {
-        try {
-            let v = '';
-            if (window?.require && window.require('electron')?.remote?.app) {
-                v = window.require('electron').remote.app.getVersion();
-            }
-            if (!v) {
-                // En mode dev, lit la version et la date du package.json
-                fetch('package.json')
-                  .then(res => res.json())
-                  .then(pkg => {
+        // Si l'API preload est dispo (production), utilise-la
+        if (window.api && typeof window.api.getVersion === 'function') {
+            window.api.getVersion().then((v: string) => setVersion(v));
+        } else {
+            // En mode dev, lit la version et la date du package.json
+            fetch('package.json')
+                .then(res => res.json())
+                .then(pkg => {
                     setVersion(pkg.version);
                     setBuildDate(pkg.buildDate || '');
-                  })
-                  .catch(() => setVersion(''));
-            } else {
-                setVersion(v);
-            }
-        } catch {}
+                })
+                .catch(() => setVersion(''));
+        }
     }, []);
 
     // Date de build
